@@ -1,28 +1,30 @@
 const nodemailer = require('nodemailer');
 
-// Nodemailer
 const sendEmail = async (options) => {
-  // 1) Create transporter ( service that will send email like "gmail","Mailgun", "mialtrap", sendGrid)
   const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: process.env.EMAIL_PORT, // if secure false port = 587, if true port= 465
-    secure: true,
+    host: 'smtp-relay.brevo.com', // Brevo SMTP host
+    port: 587, // TLS port
+    secure: false, // False for 587 (TLS)
     auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASSWORD,
+      user: process.env.BREVO_SMTP_USER, // Your Brevo SMTP login
+      pass: process.env.BREVO_SMTP_KEY, // Your Brevo SMTP key
     },
   });
 
-  // 2) Define email options (like from, to, subject, email content)
   const mailOpts = {
-    from: 'E-shop App <progahmedelsayed@gmail.com>',
+    from: 'E-shop App <your-email@yourdomain.com>', // Replace with your sender email
     to: options.email,
     subject: options.subject,
     text: options.message,
   };
 
-  // 3) Send email
-  await transporter.sendMail(mailOpts);
+  try {
+    await transporter.sendMail(mailOpts);
+    console.log(`Email sent successfully to ${options.email}`);
+  } catch (error) {
+    console.error('Error sending email:', error);
+    throw new Error('Failed to send email');
+  }
 };
 
 module.exports = sendEmail;

@@ -32,6 +32,7 @@ router
     authService.protect,
     authService.allowedTo('admin', 'manager'),
     uploadProductImages,
+
     resizeProductImages,
     createProductValidator,
     createProduct

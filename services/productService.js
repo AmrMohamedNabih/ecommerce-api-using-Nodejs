@@ -32,7 +32,9 @@ exports.resizeProductImages = asyncHandler(async (req, res, next) => {
     // Save image into our db
     req.body.imageCover = imageCoverFileName;
   }
+
   //2- Image processing for images
+  //console.log(req.files.images)
   if (req.files.images) {
     req.body.images = [];
     await Promise.all(

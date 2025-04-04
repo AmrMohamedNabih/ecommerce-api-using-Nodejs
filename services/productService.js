@@ -18,42 +18,44 @@ exports.uploadProductImages = uploadMixOfImages([
 ]);
 
 exports.resizeProductImages = asyncHandler(async (req, res, next) => {
-  // console.log(req.files);
-  //1- Image processing for imageCover
-  if (req.files.imageCover) {
-    const imageCoverFileName = `product-${uuidv4()}-${Date.now()}-cover.jpeg`;
+  // Check if req.files exists and has content before processing
+  if (req.files && Object.keys(req.files).length > 0) {
+    // 1- Image processing for imageCover (if provided)
+    if (req.files.imageCover && req.files.imageCover.length > 0) {
+      const imageCoverFileName = `product-${uuidv4()}-${Date.now()}-cover.jpeg`;
 
-    await sharp(req.files.imageCover[0].buffer)
-      .resize(2000, 1333)
-      .toFormat('jpeg')
-      .jpeg({ quality: 95 })
-      .toFile(`uploads/products/${imageCoverFileName}`);
+      await sharp(req.files.imageCover[0].buffer)
+        .resize(2000, 1333)
+        .toFormat('jpeg')
+        .jpeg({ quality: 95 })
+        .toFile(`uploads/products/${imageCoverFileName}`);
 
-    // Save image into our db
-    req.body.imageCover = imageCoverFileName;
+      // Save image into our db
+      req.body.imageCover = imageCoverFileName;
+    }
+
+    // 2- Image processing for images (if provided)
+    if (req.files.images && req.files.images.length > 0) {
+      req.body.images = [];
+      await Promise.all(
+        req.files.images.map(async (img, index) => {
+          const imageName = `product-${uuidv4()}-${Date.now()}-${index + 1}.jpeg`;
+
+          await sharp(img.buffer)
+            .resize(2000, 1333)
+            .toFormat('jpeg')
+            .jpeg({ quality: 95 })
+            .toFile(`uploads/products/${imageName}`);
+
+          // Save image into our db
+          req.body.images.push(imageName);
+        })
+      );
+    }
   }
 
-  //2- Image processing for images
-  //console.log(req.files.images)
-  if (req.files.images) {
-    req.body.images = [];
-    await Promise.all(
-      req.files.images.map(async (img, index) => {
-        const imageName = `product-${uuidv4()}-${Date.now()}-${index + 1}.jpeg`;
-
-        await sharp(img.buffer)
-          .resize(2000, 1333)
-          .toFormat('jpeg')
-          .jpeg({ quality: 95 })
-          .toFile(`uploads/products/${imageName}`);
-
-        // Save image into our db
-        req.body.images.push(imageName);
-      })
-    );
-
-    next();
-  }
+  // Always call next() whether files were processed or not
+  next();
 });
 
 // @desc    Get list of products

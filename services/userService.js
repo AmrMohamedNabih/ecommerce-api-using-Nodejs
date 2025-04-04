@@ -126,15 +126,19 @@ exports.updateLoggedUserPassword = asyncHandler(async (req, res, next) => {
 // @desc    Update logged user data (without password, role)
 // @route   PUT /api/v1/users/updateMe
 // @access  Private/Protect
+
 exports.updateLoggedUserData = asyncHandler(async (req, res, next) => {
+  // Create an object with only the fields that are provided in the request
+  const updates = {};
+
+  if (req.body.name) updates.name = req.body.name;
+  if (req.body.email) updates.email = req.body.email; // Email is optional
+  if (req.body.phone) updates.phone = req.body.phone;
+
   const updatedUser = await User.findByIdAndUpdate(
-    req.user._id,
-    {
-      name: req.body.name,
-      email: req.body.email,
-      phone: req.body.phone,
-    },
-    { new: true }
+    req.user._id, // From auth middleware
+    updates,
+    { new: true, runValidators: true } // Return updated doc, run schema validators
   );
 
   res.status(200).json({ data: updatedUser });

@@ -137,17 +137,22 @@ exports.updateLoggedUserValidator = [
       return true;
     }),
   check('email')
-    .notEmpty()
-    .withMessage('Email required')
+    .optional() // Make email optional
     .isEmail()
     .withMessage('Invalid email address')
-    .custom((val) =>
-      User.findOne({ email: val }).then((user) => {
-        if (user) {
-          return Promise.reject(new Error('E-mail already in user'));
-        }
-      })
-    ),
+    .custom(async (val, { req }) => {
+      // If email is provided, check if it’s the same as the logged-in user’s current email
+      const currentUser = await User.findById(req.user._id); // req.user from auth middleware
+      if (val === currentUser.email) {
+        return true; // Same as old email, no further checks needed
+      }
+      // If different, check if it’s already taken by another user
+      const user = await User.findOne({ email: val });
+      if (user) {
+        return Promise.reject(new Error('E-mail already in use by another user'));
+      }
+      return true;
+    }),
   check('phone')
     .optional()
     .isMobilePhone(['ar-EG', 'ar-SA'])

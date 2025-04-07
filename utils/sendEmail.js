@@ -2,25 +2,44 @@ const nodemailer = require('nodemailer');
 
 const sendEmail = async (options) => {
   const transporter = nodemailer.createTransport({
-    host: 'smtp-relay.brevo.com', // Brevo SMTP host
-    port: 587, // TLS port
-    secure: false, // False for 587 (TLS)
+    host: 'smtp-relay.brevo.com',
+    port: 587,
+    secure: false,
     auth: {
-      user: process.env.BREVO_SMTP_USER, // Your Brevo SMTP login
-      pass: process.env.BREVO_SMTP_KEY, // Your Brevo SMTP key
+      user: process.env.BREVO_SMTP_USER, // SMTP login (e.g., 899b30001@smtp-brevo.com)
+      pass: process.env.BREVO_SMTP_KEY,
     },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 10000,
+  });
+
+  console.log('SMTP Config (Brevo):', {
+    host: 'smtp-relay.brevo.com',
+    port: 587,
+    user: process.env.BREVO_SMTP_USER,
+    pass: process.env.BREVO_SMTP_KEY ? '[hidden]' : 'undefined',
   });
 
   const mailOpts = {
-    from: 'E-shop App <your-email@yourdomain.com>', // Replace with your sender email
+    from: `E-shop App <${process.env.BREVO_SENDER_EMAIL}>`, // Use the verified sender email
     to: options.email,
     subject: options.subject,
     text: options.message,
+    html: `<p>${options.message.replace(/\n/g, '<br>')}</p>`, // Add HTML for better deliverability
   };
 
+  console.log('Sending email with details:', {
+    from: mailOpts.from,
+    to: mailOpts.to,
+    subject: mailOpts.subject,
+  });
+
   try {
-    await transporter.sendMail(mailOpts);
-    console.log(`Email sent successfully to ${options.email}`);
+    const info = await transporter.sendMail(mailOpts);
+    console.log(`Email sent successfully to ${options.email}. Message ID: ${info.messageId}`);
+    console.log('SMTP Response:', info.response);
+    return info;
   } catch (error) {
     console.error('Error sending email:', error);
     throw new Error('Failed to send email');

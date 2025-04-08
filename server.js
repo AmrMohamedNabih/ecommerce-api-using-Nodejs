@@ -11,6 +11,7 @@ const hpp = require('hpp');
 dotenv.config({ path: 'config.env' });
 const ApiError = require('./utils/apiError');
 const globalError = require('./middlewares/errorMiddleware');
+const accessTrackerMiddleware = require('./middlewares/accessTrackerMiddleware');
 const dbConnection = require('./config/database');
 // Routes
 const mountRoutes = require('./routes');
@@ -28,7 +29,7 @@ app.options('*', cors());
 
 // compress all responses
 app.use(compression());
-
+app.use(accessTrackerMiddleware); // Track every request
 // Checkout webhook
 app.post(
   '/webhook-checkout',

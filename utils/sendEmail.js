@@ -26,7 +26,7 @@ const sendEmail = async (options) => {
     to: options.email,
     subject: options.subject,
     text: options.message,
-    html: `<p>${options.message.replace(/\n/g, '<br>')}</p>`, // Add HTML for better deliverability
+    html: options.html || `<p>${options.message.replace(/\n/g, '<br>')}</p>`, // Use provided html, or fallback to message
   };
 
   console.log('Sending email with details:', {

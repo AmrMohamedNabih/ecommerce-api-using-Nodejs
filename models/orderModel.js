@@ -5,7 +5,7 @@ const orderSchema = new mongoose.Schema(
     user: {
       type: mongoose.Schema.ObjectId,
       ref: 'User',
-      required: [true, 'Order must be belong to user'],
+      required: false, // Make user optional for guest orders
     },
     cartItems: [
       {
@@ -18,16 +18,18 @@ const orderSchema = new mongoose.Schema(
         price: Number,
       },
     ],
-
     taxPrice: {
       type: Number,
       default: 0,
     },
     shippingAddress: {
-      details: String,
-      phone: String,
-      city: String,
-      postalCode: String,
+      type: {
+        details: String,
+        phone: String,
+        city: String,
+        email: String // Add email field for guest users (optional)
+      },
+      required: true,
     },
     shippingPrice: {
       type: Number,
@@ -55,17 +57,20 @@ const orderSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Pre-hook to populate user and product fields
 orderSchema.pre(/^find/, function (next) {
+  // Populate user only if the user field exists (not null)
   this.populate({
     path: 'user',
     select: 'name profileImg email phone',
+    // Add a condition to skip population if user is null
+    match: { _id: { $ne: null } },
   }).populate({
     path: 'cartItems.product',
-    select: 'title imageCover ',
+    select: 'title imageCover',
   });
 
   next();
 });
 
 module.exports = mongoose.model('Order', orderSchema);
-

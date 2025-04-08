@@ -15,5 +15,5 @@ const productOrderSchema = new mongoose.Schema({
     default: Date.now,
   },
 });
-
+productOrderSchema.index({ orderCount: -1 });
 module.exports = mongoose.model('ProductOrder', productOrderSchema);

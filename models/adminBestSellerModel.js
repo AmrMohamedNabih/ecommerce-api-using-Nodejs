@@ -20,5 +20,6 @@ const adminBestSellerSchema = new mongoose.Schema({
     default: true,
   },
 });
+adminBestSellerSchema.index({ isActive: 1, addedDate: -1 });
 
 module.exports = mongoose.model('AdminBestSeller', adminBestSellerSchema);

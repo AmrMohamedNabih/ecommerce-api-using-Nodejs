@@ -2,6 +2,7 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET);
 const asyncHandler = require('express-async-handler');
 const factory = require('./handlersFactory');
 const ApiError = require('../utils/apiError');
+const productOrderService = require('./productOrderService'); // Import the service
 
 const User = require('../models/userModel');
 const Product = require('../models/productModel');
@@ -12,7 +13,6 @@ const sendEmail = require('../utils/sendEmail');
 // @desc    Create cash order
 // @route   POST /api/v1/orders/:cartId
 // @access  Public
-// In orderService.js
 // In orderService.js
 exports.createCashOrder = asyncHandler(async (req, res, next) => {
   // App settings
@@ -69,11 +69,17 @@ exports.createCashOrder = asyncHandler(async (req, res, next) => {
     }));
     await Product.bulkWrite(bulkOption, {});
 
-    // 5) Clear cart depend on cartId
+    // 5) Update ProductOrder counts for each product in the cart
+    await Promise.all(
+      cart.cartItems.map(async (item) => {
+        await productOrderService.updateOrderCount(item.product._id);
+      })
+    );
+
+    // 6) Clear cart depend on cartId
     await Cart.findByIdAndDelete(req.params.cartId);
 
-    // 6) Send confirmation emails
-    // Prepare order items for email (using populated product details)
+    // 7) Send confirmation emails
     const orderItemsTableRows = cart.cartItems
       .map((item) => {
         // Log each item to debug

@@ -1,6 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const { v4: uuidv4 } = require('uuid');
 const sharp = require('sharp');
+const requestIp = require('request-ip'); // Install via npm: npm install request-ip
 
 const { uploadMixOfImages } = require('../middlewares/uploadImageMiddleware');
 const factory = require('./handlersFactory');
@@ -66,8 +67,35 @@ exports.getProducts = factory.getAll(Product, 'Products');
 // @desc    Get specific product by id
 // @route   GET /api/v1/products/:id
 // @access  Public
-exports.getProduct = factory.getOne(Product, 'reviews');
+exports.getProduct = async (req, res, next) => {
+  try {
+    const productId = req.params.id;
+    const clientIp = requestIp.getClientIp(req); // Extract client's IP address
 
+    // Find the product
+    const product = await Product.findById(productId);
+
+    if (!product) {
+      return res.status(404).json({ status: 'error', message: 'Product not found' });
+    }
+
+    // Check if this IP has already viewed the product
+    const hasViewed = product.viewedBy.some(view => view.ipAddress === clientIp);
+
+    if (!hasViewed) {
+      // Increment views and add IP to viewedBy
+      product.views += 1;
+      product.viewedBy.push({ ipAddress: clientIp });
+      await product.save();
+    }
+
+    // Populate reviews and return the product
+    const populatedProduct = await Product.findById(productId).populate('reviews');
+    res.status(200).json({ status: 'success', data: populatedProduct });
+  } catch (error) {
+    res.status(500).json({ status: 'error', message: 'Error fetching product', error: error.message });
+  }
+};
 // @desc    Create product
 // @route   POST  /api/v1/products
 // @access  Private

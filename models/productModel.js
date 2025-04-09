@@ -60,13 +60,31 @@ const productSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    views: {
+      type: Number,
+      default: 0, // Total unique views
+    },
+    viewedBy: [
+      {
+        ipAddress: {
+          type: String,
+          required: true,
+        },
+        timestamp: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
   },
+
   {
     timestamps: true,
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
   }
 );
+productSchema.index({ views: -1 });
 
 productSchema.virtual('reviews', {
   ref: 'Review',

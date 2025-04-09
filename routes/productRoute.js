@@ -38,20 +38,22 @@ router
     createProduct
   );
 // New route to get views for a specific product
-router.get('/:id/views', async (req, res) => {
-  try {
-    const product = await Product.findById(req.params.id).select('views');
-    if (!product) {
-      return res.status(404).json({ status: 'error', message: 'Product not found' });
+router.get('/:id/views', authService.protect // Ensure user is authenticated
+  , authService.allowedTo('admin') // Restrict to admins
+  , async (req, res) => {
+    try {
+      const product = await Product.findById(req.params.id).select('views');
+      if (!product) {
+        return res.status(404).json({ status: 'error', message: 'Product not found' });
+      }
+      res.status(200).json({ status: 'success', views: product.views });
+    } catch (error) {
+      res.status(500).json({ status: 'error', message: 'Error fetching views', error: error.message });
     }
-    res.status(200).json({ status: 'success', views: product.views });
-  } catch (error) {
-    res.status(500).json({ status: 'error', message: 'Error fetching views', error: error.message });
-  }
-});
+  });
 
 // New route to get total views for all products
-router.get('/views', async (req, res) => {
+router.get('/views', authService.protect, authService.allowedTo('admin'), async (req, res) => {
   try {
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;

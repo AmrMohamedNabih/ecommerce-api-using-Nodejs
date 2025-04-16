@@ -7,7 +7,7 @@ exports.addBestSeller = async (productId, adminId) => {
 
 exports.getAdminBestSellers = async () =>
     await AdminBestSeller.find({ isActive: true })
-        .populate('productId', 'title price imageCover category') // Include image field for transformation
+        .populate('productId', 'title description price imageCover category') // Include image field for transformation
         .populate({
             path: 'productId.category', // Populate category inside productId
             select: 'name', // Only get the category name

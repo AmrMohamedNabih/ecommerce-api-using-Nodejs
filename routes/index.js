@@ -12,6 +12,7 @@ const cartRoute = require('./cartRoute');
 const orderRoute = require('./orderRoute');
 const bestSellersRoutes = require('./bestSellersRoutes');
 const dailyAccessRoutes = require('./dailyAccessRoutes');
+const sliderRoutes = require('./sliderRoute');
 
 
 const mountRoutes = (app) => {
@@ -29,8 +30,9 @@ const mountRoutes = (app) => {
   app.use('/api/v1/orders', orderRoute);
   app.use('/api/v1/best-sellers', bestSellersRoutes);
   app.use('/api/v1/daily-access', dailyAccessRoutes);
+  app.use('/api/v1/sliders', sliderRoutes);
+
 
 };
-
 
 module.exports = mountRoutes;

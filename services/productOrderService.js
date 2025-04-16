@@ -19,7 +19,7 @@ exports.getTopThreeOrdered = async () => {
     const topProducts = await ProductOrder.find()
       .sort({ orderCount: -1 })
       .limit(3)
-      .populate('productId', 'title imageCover price');
+      .populate('productId', 'title description imageCover price');
 
     if (!topProducts || topProducts.length === 0) {
       throw new ApiError('No products have been ordered yet', 404);

@@ -20,6 +20,15 @@ const adminBestSellerSchema = new mongoose.Schema({
     default: true,
   },
 });
+
 adminBestSellerSchema.index({ isActive: 1, addedDate: -1 });
+
+// Transform productId.image into productId.imageUrl after population
+adminBestSellerSchema.post('init', (doc) => {
+  if (doc.productId && doc.productId.image) {
+    doc.productId.imageUrl = `${process.env.BASE_URL}/products/${doc.productId.image}`;
+    delete doc.productId.image; // Remove the original image field
+  }
+});
 
 module.exports = mongoose.model('AdminBestSeller', adminBestSellerSchema);

@@ -13,6 +13,7 @@ const orderRoute = require('./orderRoute');
 const bestSellersRoutes = require('./bestSellersRoutes');
 const dailyAccessRoutes = require('./dailyAccessRoutes');
 const sliderRoutes = require('./sliderRoute');
+const searchRoute = require('./searchRoute');
 
 
 const mountRoutes = (app) => {
@@ -31,6 +32,7 @@ const mountRoutes = (app) => {
   app.use('/api/v1/best-sellers', bestSellersRoutes);
   app.use('/api/v1/daily-access', dailyAccessRoutes);
   app.use('/api/v1/sliders', sliderRoutes);
+  app.use('/api/v1/search', searchRoute);
 
 
 };

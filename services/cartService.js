@@ -1,8 +1,5 @@
 const asyncHandler = require('express-async-handler');
-const { v4: uuidv4 } = require('uuid'); // Optional, if you want to generate a custom cartId
-
 const ApiError = require('../utils/apiError');
-
 const Product = require('../models/productModel');
 const Coupon = require('../models/couponModel');
 const Cart = require('../models/cartModel');
@@ -97,11 +94,20 @@ exports.getLoggedUserCart = asyncHandler(async (req, res, next) => {
 
   let cart;
   if (userId) {
-    cart = await Cart.findOne({ user: userId });
+    cart = await Cart.findOne({ user: userId }).populate({
+      path: 'cartItems.product',
+      select: 'imageCover title price', // Include imageCover, title, and price
+    });
   } else if (cartId) {
-    cart = await Cart.findOne({ _id: cartId, user: null });
+    cart = await Cart.findOne({ _id: cartId, user: null }).populate({
+      path: 'cartItems.product',
+      select: 'imageCover title price', // Include imageCover, title, and price
+    });
   } else {
-    cart = await Cart.findOne({ clientIp, user: null });
+    cart = await Cart.findOne({ clientIp, user: null }).populate({
+      path: 'cartItems.product',
+      select: 'imageCover title price', // Include imageCover, title, and price
+    });
   }
 
   if (!cart) {

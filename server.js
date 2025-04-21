@@ -36,7 +36,7 @@ app.post(
   express.raw({ type: 'application/json' }),
   webhookCheckout
 );
-
+app.get('/health', (req, res) => res.status(200).json({ status: 'OK' }));
 // Middlewares
 app.use(express.json({ limit: '20kb' }));
 app.use(express.static(path.join(__dirname, 'uploads')));
